@@ -53,3 +53,4 @@ jobs:
           python-version: '3.11'
       - run: pip install pytest httpx docker
       - run: make ci
+        if: ${{ env.USE_REAL_LLM != '' }}
