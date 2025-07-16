@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install ruff black mypy setuptools_scm
+      - run: make lint
+
+  unit:
+    runs-on: ubuntu-24.04
+    needs: lint
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install . pytest
+      - run: make test
+
+  integration-mock:
+    runs-on: ubuntu-24.04
+    needs: unit
+    env:
+      USE_MOCK_LLM: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pytest httpx
+      - run: make ci
+
+  integration-real:
+    if: ${{ secrets.USE_REAL_LLM != '' }}
+    runs-on: [self-hosted, gpu]
+    needs: unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install pytest httpx docker
+      - run: make ci

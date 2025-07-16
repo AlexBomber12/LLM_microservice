@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  external-llm:
+    build: ./docker
+    runtime: nvidia
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      MODEL_NAME: meta-llama/Meta-Llama-3-8B-Instruct
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      retries: 3
