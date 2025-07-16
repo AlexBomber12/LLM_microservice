@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=65", "wheel", "setuptools_scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm_microservice"
+dynamic = ["version"]
+requires-python = ">=3.11"
+license = {file = "LICENSE"}
+description = "LLM microservice with vLLM"
+readme = "README.md"
+
+[project.optional-dependencies]
+server = [
+    "fastapi",
+    "uvicorn[standard]",
+    "vllm",
+]
+
+[tool.setuptools_scm]
+write_to = "src/llm_microservice/_version.py"
+
+[tool.black]
+line-length = 88
+
+
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+mypy_path = "src"
+ignore_missing_imports = true
+plugins = ["pydantic.mypy"]
+
+[project.urls]
+Homepage = "https://example.com"
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+pythonpath = ["src"]
