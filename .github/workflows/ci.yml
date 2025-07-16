@@ -41,7 +41,7 @@ jobs:
       - run: make ci
 
   integration-real:
-    if: ${{ secrets.USE_REAL_LLM != '' }}
+    if: "${{ secrets.USE_REAL_LLM != '' }}"
     needs: integration-mock
     runs-on: [self-hosted, gpu]
     env:
