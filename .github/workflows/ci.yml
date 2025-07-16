@@ -41,8 +41,10 @@ jobs:
 
   integration-real:
     if: ${{ secrets.USE_REAL_LLM != '' }}
+    needs: integration-mock
     runs-on: [self-hosted, gpu]
-    needs: unit
+    env:
+      USE_REAL_LLM: ${{ secrets.USE_REAL_LLM }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
