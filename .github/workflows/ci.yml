@@ -1,8 +1,9 @@
+---
 name: CI
 
 on:
-  push:
-  pull_request:
+  push: {}
+  pull_request: {}
 
 jobs:
   lint:
@@ -41,8 +42,10 @@ jobs:
 
   integration-real:
     if: ${{ secrets.USE_REAL_LLM != '' }}
+    needs: integration-mock
     runs-on: [self-hosted, gpu]
-    needs: unit
+    env:
+      USE_REAL_LLM: ${{ secrets.USE_REAL_LLM }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -50,3 +53,4 @@ jobs:
           python-version: '3.11'
       - run: pip install pytest httpx docker
       - run: make ci
+        if: ${{ env.USE_REAL_LLM != '' }}
