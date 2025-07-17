@@ -10,8 +10,10 @@ license = {file = "LICENSE"}
 description = "LLM microservice with vLLM"
 readme = "README.md"
 dependencies = [
-    "pydantic~=2.6",
+    "fastapi~=0.111",
     "httpx",
+    "pydantic~=2.6",
+    "starlette>=0.37,<0.38",  # FastAPI runtime
 ]
 
 [project.optional-dependencies]
@@ -48,3 +50,6 @@ Homepage = "https://example.com"
 [tool.pytest.ini_options]
 addopts = "-ra"
 pythonpath = ["src"]
+markers = [
+  "integration: mark for integration tests",
+]
