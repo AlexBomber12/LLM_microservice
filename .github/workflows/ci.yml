@@ -46,7 +46,7 @@ jobs:
 
   integration-real:
     needs: integration-mock
-    runs-on: [self-hosted, gpu]
+    runs-on: ubuntu-24.04
     env:
       USE_REAL_LLM: ${{ secrets.USE_REAL_LLM }}
     steps:
