@@ -1,8 +1,6 @@
 services:
-  external-llm:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
+  llm-microservice:
+    image: ghcr.io/alexbomber12/llm_microservice:${LLM_TAG:-v1.2.1}
     runtime: nvidia
     environment:
       - MODEL_NAME          # pulled from .env
