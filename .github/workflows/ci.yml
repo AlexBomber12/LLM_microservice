@@ -44,8 +44,28 @@ jobs:
           pip install .
       - run: make ci
 
-  integration-real:
+  build-docker:
     needs: integration-mock
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t test-llm -f docker/Dockerfile .
+
+      - name: Smoke-test /health
+        run: |
+          docker run -d --rm -p 8000:8000 --name llm test-llm
+          for i in {1..30}; do
+            sleep 2
+            if curl -sf http://localhost:8000/health; then
+              echo "health OK"; docker stop llm; exit 0
+            fi
+          done
+          echo "healthcheck failed"; docker logs llm; docker stop llm; exit 1
+
+  integration-real:
+    needs: [build-docker]
     runs-on: ubuntu-24.04
     env:
       USE_REAL_LLM: ${{ secrets.USE_REAL_LLM }}
