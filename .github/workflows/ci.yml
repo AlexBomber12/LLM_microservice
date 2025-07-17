@@ -13,7 +13,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install ruff black mypy setuptools_scm
+      # install pydantic for the mypy plugin
+      - run: pip install ruff black mypy pydantic~=2.6 setuptools_scm
       - run: make lint
 
   unit:
@@ -37,20 +38,33 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: pip install pytest httpx
+      - run: |
+          pip install ruff black mypy pydantic~=2.6 uvicorn[standard] setuptools_scm \
+            pytest httpx
+          pip install .
       - run: make ci
 
   integration-real:
-    if: ${{ secrets.USE_REAL_LLM != '' }}
     needs: integration-mock
     runs-on: [self-hosted, gpu]
     env:
       USE_REAL_LLM: ${{ secrets.USE_REAL_LLM }}
     steps:
+      - name: Skip when secret is absent
+        if: ${{ env.USE_REAL_LLM == '' }}
+        run: |
+          echo "::notice::Integration-real skipped – secret USE_REAL_LLM not set."
+          exit 0
       - uses: actions/checkout@v4
+        if: ${{ env.USE_REAL_LLM != '' }}
       - uses: actions/setup-python@v5
+        if: ${{ env.USE_REAL_LLM != '' }}
         with:
           python-version: '3.11'
-      - run: pip install pytest httpx docker
+      - run: |
+          pip install ruff black mypy pydantic~=2.6 setuptools_scm \
+            pytest httpx docker
+          pip install .
+        if: ${{ env.USE_REAL_LLM != '' }}
       - run: make ci
         if: ${{ env.USE_REAL_LLM != '' }}

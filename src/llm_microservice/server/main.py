@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import cast
-from typing import Callable, Awaitable
+from functools import wraps
+from typing import Awaitable, Callable, ParamSpec, TypeVar, cast
 import time
 from datetime import datetime
 from typing import Any, AsyncGenerator, Dict
@@ -46,9 +46,24 @@ async def verify_auth(request: Request) -> None:
 
 AUTH_DEP = Depends(verify_auth)
 
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def _log(func: Callable[P, Awaitable[R]]) -> Callable[P, Awaitable[R]]:
+    """Typed async logging decorator."""
+
+    @wraps(func)
+    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        logger.info("CALL %s args=%s kwargs=%s", func.__qualname__, args, kwargs)
+        result: R = await func(*args, **kwargs)
+        logger.info("RET  %s → %s", func.__qualname__, result)
+        return result
+
+    return wrapper
+
 
 def log_middleware(app: FastAPI) -> None:
-    @app.middleware("http")
     async def _log(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
     ) -> Response:
@@ -65,6 +80,8 @@ def log_middleware(app: FastAPI) -> None:
         }
         logger.info(json.dumps(data))
         return response
+
+    app.middleware("http")(_log)
 
 
 log_middleware(app)
@@ -94,9 +111,11 @@ def get_engine() -> LLMEngine:
 ENGINE_DEP = Depends(get_engine)
 
 
-@app.get("/health")
 async def health() -> Dict[str, str]:
     return {"status": "ok"}
+
+
+app.get("/health", response_model=Dict[str, str])(_log(health))
 
 
 async def _run_completion(
@@ -152,7 +171,6 @@ async def completion_stream(
     yield json.dumps({"choices": data["choices"], "model": data["model"]}).encode()
 
 
-@app.post("/v1/chat/completions")
 async def chat_completions(
     req: CompletionRequest,
     request: Request,
@@ -170,7 +188,9 @@ async def chat_completions(
     return JSONResponse(resp.model_dump())
 
 
-@app.post("/v1/completions")
+app.post("/v1/chat/completions")(_log(chat_completions))
+
+
 async def completions(
     req: CompletionRequest,
     request: Request,
@@ -186,6 +206,9 @@ async def completions(
     resp = await completion_endpoint(req, engine)
     request.state.completion_tokens = resp.usage.completion_tokens
     return JSONResponse(resp.model_dump())
+
+
+app.post("/v1/completions")(_log(completions))
 
 
 def create_app() -> FastAPI:
