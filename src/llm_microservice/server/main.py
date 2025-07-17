@@ -3,8 +3,8 @@ from __future__ import annotations
 import json
 import logging
 import os
-from typing import cast
-from typing import Callable, Awaitable
+from typing import Awaitable, Callable, ParamSpec, TypeVar, cast
+from functools import wraps
 import time
 from datetime import datetime
 from typing import Any, AsyncGenerator, Dict
@@ -45,6 +45,27 @@ async def verify_auth(request: Request) -> None:
 
 
 AUTH_DEP = Depends(verify_auth)
+
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def _log(func: Callable[P, Awaitable[R]]) -> Callable[P, Awaitable[R]]:
+    """Middleware-style decorator that logs latency."""
+
+    @wraps(func)
+    async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        start = time.perf_counter()
+        result: R = await func(*args, **kwargs)
+        logger.info(
+            "route=%s latency_ms=%.2f",
+            func.__name__,
+            (time.perf_counter() - start) * 1000,
+        )
+        return result
+
+    return wrapper
 
 
 def log_middleware(app: FastAPI) -> None:
@@ -95,6 +116,7 @@ ENGINE_DEP = Depends(get_engine)
 
 
 @app.get("/health")
+@_log
 async def health() -> Dict[str, str]:
     return {"status": "ok"}
 
@@ -153,6 +175,7 @@ async def completion_stream(
 
 
 @app.post("/v1/chat/completions")
+@_log
 async def chat_completions(
     req: CompletionRequest,
     request: Request,
@@ -171,6 +194,7 @@ async def chat_completions(
 
 
 @app.post("/v1/completions")
+@_log
 async def completions(
     req: CompletionRequest,
     request: Request,
