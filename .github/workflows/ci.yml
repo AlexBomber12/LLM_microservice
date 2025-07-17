@@ -41,6 +41,7 @@ jobs:
       - run: |
           pip install ruff black mypy pydantic~=2.6 setuptools_scm \
             pytest httpx docker  # docker is a no-op in mock but needed in real
+          pip install .
       - run: make ci
 
   integration-real:
@@ -63,6 +64,7 @@ jobs:
       - run: |
           pip install ruff black mypy pydantic~=2.6 setuptools_scm \
             pytest httpx docker
+          pip install .
         if: ${{ env.USE_REAL_LLM != '' }}
       - run: make ci
         if: ${{ env.USE_REAL_LLM != '' }}
