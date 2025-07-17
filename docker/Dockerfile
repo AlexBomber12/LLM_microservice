@@ -15,6 +15,6 @@ RUN pip3 install --no-cache-dir fastapi uvicorn[standard] vllm huggingface-hub h
 WORKDIR /app
 COPY . /app
 
-RUN pip3 install --no-cache-dir .[server]
+RUN pip3 install --no-cache-dir ".[server]"
 
 CMD ["tini", "-g", "uvicorn", "llm_microservice.server.main:app", "--host", "0.0.0.0", "--port", "8000"]
