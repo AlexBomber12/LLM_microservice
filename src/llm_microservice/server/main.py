@@ -4,7 +4,7 @@ import json
 import logging
 import os
 from typing import Awaitable, Callable, ParamSpec, TypeVar, cast
-from functools import wraps
+import functools
 import time
 from datetime import datetime
 from typing import Any, AsyncGenerator, Dict
@@ -52,9 +52,9 @@ R = TypeVar("R")
 
 
 def _log(func: Callable[P, Awaitable[R]]) -> Callable[P, Awaitable[R]]:
-    """Middleware-style decorator that logs latency."""
+    """Decorator that logs latency and token counts without losing type info."""
 
-    @wraps(func)
+    @functools.wraps(func)
     async def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
         start = time.perf_counter()
         result: R = await func(*args, **kwargs)
