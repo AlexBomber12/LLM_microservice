@@ -55,14 +55,14 @@ jobs:
 
       - name: Smoke-test /health
         run: |
-          docker run -d --rm -p 8000:8000 --name llm test-llm
+          docker run -d -p 8000:8000 --name llm test-llm
           for i in {1..30}; do
             sleep 2
             if curl -sf http://localhost:8000/health; then
-              echo "health OK"; docker stop llm; exit 0
+              echo "health OK"; docker rm -f llm; exit 0
             fi
           done
-          echo "healthcheck failed"; docker logs llm; docker stop llm; exit 1
+          echo "healthcheck failed"; docker logs llm; docker rm -f llm; exit 1
 
   integration-real:
     needs: [build-docker]

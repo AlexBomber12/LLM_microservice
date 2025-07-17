@@ -7,15 +7,18 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y tini && rm -rf /var/lib/apt/lists/*
 
+# ensure Python 3.11 is used for all installs
+RUN python3.11 -m pip install --upgrade pip
+
 ENV PYTHONUNBUFFERED=1 \
     HF_HOME=/models/.cache
 
-RUN pip3 install --no-cache-dir fastapi uvicorn[standard] vllm huggingface-hub httpx
+RUN python3.11 -m pip install --no-cache-dir fastapi uvicorn[standard] vllm huggingface-hub httpx
 
 WORKDIR /app
 COPY . /app
 
-RUN pip3 install --no-cache-dir ".[server]"
+RUN python3.11 -m pip install --no-cache-dir ".[server]"
 
 # tini as the init process
 ENTRYPOINT ["tini", "-g", "--"]
