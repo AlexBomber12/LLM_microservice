@@ -14,6 +14,7 @@ dependencies = [
     "httpx",
     "pydantic~=2.6",
     "starlette>=0.37,<0.38",  # FastAPI runtime
+    "uvicorn[standard]~=0.30",
 ]
 
 [project.optional-dependencies]

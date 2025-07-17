@@ -39,8 +39,8 @@ jobs:
         with:
           python-version: '3.11'
       - run: |
-          pip install ruff black mypy pydantic~=2.6 setuptools_scm \
-            pytest httpx docker  # docker is a no-op in mock but needed in real
+          pip install ruff black mypy pydantic~=2.6 uvicorn[standard] setuptools_scm \
+            pytest httpx
           pip install .
       - run: make ci
 
