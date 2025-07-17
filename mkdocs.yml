@@ -1,8 +1,9 @@
 site_name: LLM Microservice
 nav:
+  - Home: index.md
   - Quickstart: quickstart.md
-  - Architecture: architecture.md
   - SDK: sdk.md
+  - Architecture: architecture.md
   - ADRs:
       - ADR 0001: adr/0001-record-architecture.md
 docs_dir: docs
