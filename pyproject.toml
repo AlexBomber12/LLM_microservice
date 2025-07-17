@@ -9,6 +9,10 @@ requires-python = ">=3.11"
 license = {file = "LICENSE"}
 description = "LLM microservice with vLLM"
 readme = "README.md"
+dependencies = [
+    "pydantic~=2.6",
+    "httpx",
+]
 
 [project.optional-dependencies]
 server = [
