@@ -1,11 +1,19 @@
-version: "3.9"
 services:
   external-llm:
-    build: ./docker
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
     runtime: nvidia
     environment:
-      NVIDIA_VISIBLE_DEVICES: all
-      MODEL_NAME: meta-llama/Meta-Llama-3-8B-Instruct
+      - MODEL_NAME          # pulled from .env
+      - GPU_MEMORY_UTILIZATION
+      - HF_HOME
+      - LLM_API_KEY         # may be empty
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - /opt/llm_models:/models
+    ports:
+      - "8000:8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
