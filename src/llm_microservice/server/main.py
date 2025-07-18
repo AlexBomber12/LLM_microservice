@@ -33,6 +33,8 @@ logging.basicConfig(level=logging.INFO)
 MODEL_NAME = os.getenv("MODEL_NAME", "meta-llama/Meta-Llama-3-8B-Instruct")
 GPU_MEMORY_UTILIZATION = float(os.getenv("GPU_MEMORY_UTILIZATION", "0.85"))
 API_KEY = os.getenv("LLM_API_KEY")
+# quantization can be "awq", "gptq", or None for standard loading
+QUANTIZATION = os.getenv("QUANTIZATION") or None
 
 app = FastAPI()
 
@@ -95,7 +97,7 @@ class LLMEngine:
             model=MODEL_NAME,
             gpu_memory_utilization=GPU_MEMORY_UTILIZATION,
             max_model_len=16384,
-            quantization="awq",
+            quantization=QUANTIZATION,
         )
 
     def generate(self, prompt: str, params: SamplingParams) -> Any:
