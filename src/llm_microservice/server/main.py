@@ -33,6 +33,8 @@ logging.basicConfig(level=logging.INFO)
 MODEL_NAME = os.getenv("MODEL_NAME", "meta-llama/Meta-Llama-3-8B-Instruct")
 GPU_MEMORY_UTILIZATION = float(os.getenv("GPU_MEMORY_UTILIZATION", "0.85"))
 API_KEY = os.getenv("LLM_API_KEY")
+# optional quantization method, e.g. "awq" or "gptq"
+QUANTIZATION = os.getenv("QUANTIZATION")
 
 app = FastAPI()
 
@@ -91,12 +93,14 @@ class LLMEngine:
     def __init__(self) -> None:
         if LLM is None:
             raise RuntimeError("vLLM is not installed")
-        self.llm = LLM(
-            model=MODEL_NAME,
-            gpu_memory_utilization=GPU_MEMORY_UTILIZATION,
-            max_model_len=16384,
-            quantization="awq",
-        )
+        kwargs = {
+            "model": MODEL_NAME,
+            "gpu_memory_utilization": GPU_MEMORY_UTILIZATION,
+            "max_model_len": 16384,
+        }
+        if QUANTIZATION:
+            kwargs["quantization"] = QUANTIZATION
+        self.llm = LLM(**kwargs)
 
     def generate(self, prompt: str, params: SamplingParams) -> Any:
         return self.llm.generate([prompt], params)[0]
