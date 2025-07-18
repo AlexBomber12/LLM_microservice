@@ -80,4 +80,3 @@ def test_completions_null_field(client: TestClient, param: str) -> None:
     payload = BASE_PAYLOAD.copy()
     payload[param] = None
     _post(client, payload)
-
