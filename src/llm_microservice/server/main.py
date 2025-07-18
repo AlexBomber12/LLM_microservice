@@ -127,17 +127,23 @@ async def _run_completion(
     engine: LLMEngine,
 ) -> CompletionResponse:
     prompt = req.prompt or "".join(m.content for m in req.messages or [])
+    # vLLM's SamplingParams does not accept ``None`` for numeric parameters.
+    # When a value is missing, fall back to OpenAI/vLLM defaults to avoid
+    # ``TypeError`` such as "<' not supported between int and NoneType".
     sampling = SamplingParams(
         n=1,
         max_tokens=req.max_tokens,
-        temperature=req.temperature,
-        top_p=req.top_p,
-        top_k=req.top_k,
-        repetition_penalty=req.repetition_penalty,
-        presence_penalty=req.presence_penalty,
-        frequency_penalty=req.frequency_penalty,
+        temperature=1.0 if req.temperature is None else req.temperature,
+        top_p=1.0 if req.top_p is None else req.top_p,
+        top_k=-1 if req.top_k is None else req.top_k,
+        repetition_penalty=
+        1.0 if req.repetition_penalty is None else req.repetition_penalty,
+        presence_penalty=0.0 if req.presence_penalty is None else req.presence_penalty,
+        frequency_penalty=
+        0.0 if req.frequency_penalty is None else req.frequency_penalty,
         stop=req.stop,
         seed=req.seed,
+        logprobs=None if req.logprobs is None else req.logprobs,
     )
     result = engine.generate(prompt, sampling)
     text = result.outputs[0].text
