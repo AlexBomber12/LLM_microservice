@@ -2,6 +2,8 @@ services:
   llm-microservice:
     image: ghcr.io/alexbomber12/llm_microservice:${LLM_TAG:-v1.2.1}
     runtime: nvidia
+    ports:
+      - "8000:8000"
     environment:
       - MODEL_NAME          # pulled from .env
       - GPU_MEMORY_UTILIZATION
